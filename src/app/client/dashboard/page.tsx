@@ -5,10 +5,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState } from 'react';
 
+// Define interfaces for your data types
+interface Client {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  name: string | null; // company name
+  client_type: string | null;
+  accountant_id: string | null;
+  created_at?: string;
+}
+
+interface Accountant {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  created_at?: string;
+}
+
 export default function ClientDashboard() {
   const [isLoading, setIsLoading] = useState(true);
-  const [clientData, setClientData] = useState<any>(null);
-  const [accountantData, setAccountantData] = useState<any>(null);
+  const [clientData, setClientData] = useState<Client | null>(null);
+  const [accountantData, setAccountantData] = useState<Accountant | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -157,11 +181,6 @@ export default function ClientDashboard() {
               )}
             </CardContent>
           </Card>
-        </div>
-
-        <div className="mt-8 p-4 bg-slate-800 text-white rounded overflow-auto max-h-96">
-          <h2 className="text-xl font-bold mb-4">Debug Data</h2>
-          <pre className="whitespace-pre-wrap break-all">{JSON.stringify(clientData, null, 2)}</pre>
         </div>
       </main>
     </div>

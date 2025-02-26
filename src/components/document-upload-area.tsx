@@ -65,31 +65,41 @@ export function DocumentUploadArea({ title, description }: DocumentUploadAreaPro
       return;
     }
 
-    // Get client_id
-    const { data: clientUser } = await supabase
-      .from('client_users')
-      .select('client_id')
-      .eq('user_id', user.id)
-      .single();
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // 01-12
 
-    if (!clientUser) {
+    const { data: client } = await supabase.from('clients').select('id').eq('user_id', user.id).single();
+
+    if (!client) {
       setUploading(false);
       return;
     }
 
-    const clientId = clientUser.client_id;
+    const clientId = client.id;
     const category = title.toLowerCase().replace(/\s/g, '_');
     const newUploadedFiles: string[] = [];
 
-    // Upload each file
+    // Upload each file with proper path structure
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const fileExt = file.name.split('.').pop();
-      const fileName = `${clientId}/${category}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
+      const fileName = `${clientId}/${year}/${month}/${category}/${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage.from('client-documents').upload(fileName, file);
 
       if (!uploadError) {
+        // Update Supabase database with document info
+        await supabase.from('documents').insert({
+          client_id: clientId,
+          file_path: fileName,
+          filename: file.name,
+          file_type: file.type,
+          category: category,
+          size_bytes: file.size,
+          uploaded_by: user.id,
+        });
+
         newUploadedFiles.push(file.name);
       }
 
