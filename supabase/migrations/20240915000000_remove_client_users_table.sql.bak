@@ -1,0 +1,39 @@
+-- First, check and drop any foreign key constraints referencing client_users
+DO $$
+BEGIN
+  -- Drop all foreign keys referencing the client_users table
+  EXECUTE (
+    SELECT string_agg(
+      'ALTER TABLE ' || quote_ident(tc.table_schema) || '.' || quote_ident(tc.table_name) ||
+      ' DROP CONSTRAINT ' || quote_ident(tc.constraint_name) || ';',
+      ' '
+    )
+    FROM information_schema.table_constraints tc
+    JOIN information_schema.constraint_column_usage ccu
+    ON tc.constraint_catalog = ccu.constraint_catalog
+    AND tc.constraint_schema = ccu.constraint_schema
+    AND tc.constraint_name = ccu.constraint_name
+    WHERE tc.constraint_type = 'FOREIGN KEY'
+    AND ccu.table_schema = 'public'
+    AND ccu.table_name = 'client_users'
+  );
+END $$;
+
+-- Make sure we have user_id column in clients table if it doesn't already exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public'
+    AND table_name = 'clients'
+    AND column_name = 'user_id'
+  ) THEN
+    ALTER TABLE public.clients ADD COLUMN user_id UUID REFERENCES auth.users(id);
+  END IF;
+END $$;
+
+-- Now drop the client_users table
+DROP TABLE IF EXISTS public.client_users;
+
+-- Add comment explaining the migration
+COMMENT ON TABLE public.clients IS 'Client data with direct link to auth.users via user_id (removed client_users junction table)';

@@ -1,21 +1,38 @@
 'use client';
 
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
-import { AuthenticationForm } from '@/components/authentication/authentication-form';
 import { signup } from '@/app/signup/actions';
+import { AuthenticationForm } from '@/components/authentication/authentication-form';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import Image from 'next/image';
+import { useState } from 'react';
 
 export function SignupForm() {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [companyName, setCompanyName] = useState('');
 
   function handleSignup() {
-    signup({ email, password }).then((data) => {
+    if (password !== confirmPassword) {
+      toast({ description: 'Passwords do not match', variant: 'destructive' });
+      return;
+    }
+
+    signup({
+      email,
+      password,
+      firstName,
+      lastName,
+      phoneNumber,
+      companyName,
+    }).then((data) => {
       if (data?.error) {
-        toast({ description: 'Something went wrong. Please try again', variant: 'destructive' });
+        toast({ description: data.errorMessage || 'Something went wrong. Please try again', variant: 'destructive' });
       }
     });
   }
@@ -29,6 +46,17 @@ export function SignupForm() {
         onEmailChange={(email) => setEmail(email)}
         password={password}
         onPasswordChange={(password) => setPassword(password)}
+        confirmPassword={confirmPassword}
+        onConfirmPasswordChange={(password) => setConfirmPassword(password)}
+        firstName={firstName}
+        onFirstNameChange={(firstName) => setFirstName(firstName)}
+        lastName={lastName}
+        onLastNameChange={(lastName) => setLastName(lastName)}
+        phoneNumber={phoneNumber}
+        onPhoneNumberChange={(phoneNumber) => setPhoneNumber(phoneNumber)}
+        companyName={companyName}
+        onCompanyNameChange={(companyName) => setCompanyName(companyName)}
+        isSignup={true}
       />
       <Button formAction={() => handleSignup()} type={'submit'} variant={'secondary'} className={'w-full'}>
         Sign up
