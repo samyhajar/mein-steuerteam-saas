@@ -63,7 +63,7 @@
     "@vercel/git-hooks": "^1.0.0",
     "eslint": "^9.21.0",
     "eslint-config-next": "15.1.7",
-    "lint-staged": "^15.4.3",
+    "lint-staged": "^16.0.0",
     "postcss": "^8.5.3",
     "prettier": "^3.5.2",
     "supabase": "^2.15.8",
